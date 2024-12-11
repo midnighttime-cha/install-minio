@@ -159,3 +159,56 @@ sudo systemctl status minio.service
 sudo systemctl enable minio.service
 ```
 
+## ตั้งค่า nginx
+```bash
+server {
+    listen 80;
+    server_name minio-api.example.com;
+    client_max_body_size 200M;
+    location / {
+        proxy_pass http://192.168.1.99:9000;
+
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # WebSocket Headers
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Increase timeout settings for WebSocket
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+
+        # Disable buffering for WebSocket traffic
+        proxy_buffering off;
+    }
+}
+
+server {
+    listen 80;
+    server_name minio.example.com;
+    client_max_body_size 200M;
+    location / {
+        proxy_pass http://192.168.1.99:9001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # WebSocket Headers
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Increase timeout settings for WebSocket
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+
+        # Disable buffering for WebSocket traffic
+        proxy_buffering off;
+    }
+}
+```
